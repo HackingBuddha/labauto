@@ -1,0 +1,37 @@
+name: LabAuto CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ['3.11']
+
+    steps:
+    # 1) Checkout source
+    - uses: actions/checkout@v4
+
+    # 2) Provision Conda env quickly via Micromamba (caches deps)
+    - uses: mamba-org/provision-with-micromamba@v15
+      with:
+        environment-file: env.yml
+        environment-name: labauto
+        cache-downloads: true
+
+    # 3) Feature extraction & training (ensures scripts stay green)
+    - name: Generate features & train model
+      shell: bash -l {0}
+      run: |
+        python scripts/feature_engineering.py clinvar_20250615.vcf.gz
+        python scripts/train.py
+
+    # 4) Test suite (add more tests in `tests/`)
+    - name: PyTest
+      shell: bash -l {0}
+      run: pytest -q
