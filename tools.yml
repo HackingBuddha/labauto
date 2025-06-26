@@ -1,0 +1,15 @@
+- name: annotate_variants
+  description: "Upload a gzip‑compressed VCF and return pathogenic count"
+  input_schema:
+    type: object
+    properties:
+      vcf_gz:
+        type: string
+        format: binary
+  output_schema:
+    type: object
+    properties:
+      n:
+        type: integer
+      pathogenic_calls:
+        type: integer

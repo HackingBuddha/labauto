@@ -1,0 +1,9 @@
+# data & models
+/data/
+*.parquet
+*.pdb
+*.pt
+# Python
+__pycache__/
+.env
+clinvar_*.vcf.gz
