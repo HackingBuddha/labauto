@@ -1,0 +1,12 @@
+# === Requirements for the CPU-only CI environment ===
+
+# Explicitly pin numpy to a version < 2.0 to satisfy opentrons
+numpy==1.26.4
+
+# PyTorch (CPU version)
+torch==2.4.1
+torchvision==0.19.1
+
+# Other application dependencies
+opentrons==8.4.1
+alphafold-colabfold==2.3.8

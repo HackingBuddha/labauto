@@ -1,0 +1,18 @@
+# === Requirements for Local Development with AMD GPU (ROCm) ===
+
+# 1. Use the ROCm index for PyTorch
+--index-url https://download.pytorch.org/whl/rocm6.1
+
+torch==2.4.1
+torchvision==0.19.1
+torchaudio
+
+# 2. Reset the index URL to the default PyPI
+--index-url https://pypi.org/simple
+
+# 3. Explicitly pin numpy to a version < 2.0 to satisfy opentrons
+numpy==1.26.4
+
+# 4. List other application dependencies
+opentrons==8.4.1
+alphafold-colabfold==2.3.8
