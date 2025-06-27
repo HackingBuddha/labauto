@@ -8,7 +8,11 @@ Train a logistic‑regression variant‑pathogenicity classifier.
   but will **exit** if that yields only one class—avoids the ValueError you
   hit.
 """
-import argparse, joblib, sys, pandas as pd
+
+import argparse
+import joblib
+import sys
+import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
 
@@ -19,7 +23,7 @@ args = ap.parse_args()
 
 df = pd.read_parquet(args.data)
 
-# Prefer real ClinVar labels if present
+# Prefer real ClinVar labels if present
 if "CLNSIG" in df.columns:
     y = df["CLNSIG"].isin(["Pathogenic", "Likely_pathogenic"]).astype(int)
 else:

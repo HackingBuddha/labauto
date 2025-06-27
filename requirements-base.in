@@ -1,0 +1,15 @@
+# Base packages for both local dev and CI
+# Use .in files for abstract dependencies, and we'll compile them later.
+alphafold-colabfold
+mcp-agent
+
+# Conda packages (listed here for clarity, will be in env.yml)
+# python=3.11
+# pandas
+# pyarrow
+# biopython=1.85
+# scanpy
+# scikit-learn
+# fastapi
+# uvicorn
+# joblib
