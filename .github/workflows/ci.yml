@@ -1,10 +1,35 @@
-# -------------------------------------------
-- uses: mamba-org/setup-micromamba@v2        # 👈 new action
-  with:
-    micromamba-version: "2.0.5-0"            # any ≥0.25 is fine
-    environment-file: env.yml
-    environment-name: labauto
-    init-shell: bash                         # avoids the zsh deinit path
-    cache-environment: true
-    cache-downloads:  true
-# -------------------------------------------
+name: LabAuto CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    # 1) Checkout source
+    - uses: actions/checkout@v4
+
+    # 2) Micromamba env (maintained action)
+    - uses: mamba-org/setup-micromamba@v2   # ✅ no deinit bug
+      with:
+        micromamba-version: "2.0.5-0"      # ≥0.25 supports -p
+        environment-file: env.yml
+        environment-name: labauto
+        init-shell: bash
+        cache-environment: true
+        cache-downloads:  true
+
+    # 3) Feature extraction & model training
+    - name: Generate features & train model
+      shell: bash -l {0}
+      run: |
+        python scripts/feature_engineering.py clinvar_20250615.vcf.gz
+        python scripts/train.py
+
+    # 4) Placeholder tests (add your own under tests/)
+    - name: Dummy test
+      shell: bash -l {0}
+      run: echo "CI ran successfully"
