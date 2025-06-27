@@ -1,10 +1,10 @@
-# .github/workflows/ci.yml
-# replace the whole micromamba step ⬇
-- uses: mamba-org/setup-micromamba@v2      # new action 🎉
+# -------------------------------------------
+- uses: mamba-org/setup-micromamba@v2        # 👈 new action
   with:
-    micromamba-version: "2.0.5-0"          # ⬅ any version ≥0.25 works  :contentReference[oaicite:2]{index=2}
+    micromamba-version: "2.0.5-0"            # any ≥0.25 is fine
     environment-file: env.yml
     environment-name: labauto
-    init-shell: bash                       # default is bash; keeps things simple
+    init-shell: bash                         # avoids the zsh deinit path
     cache-environment: true
-    cache-downloads: true
+    cache-downloads:  true
+# -------------------------------------------
