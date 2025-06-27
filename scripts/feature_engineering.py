@@ -6,6 +6,7 @@
   real labels and no longer exits with the “one class” error.
 * Forces CHROM to string + POS to Int64 to keep PyArrow happy.
 """
+
 # [FIX] Imports are now sorted and 'os' is at the top level.
 import argparse
 import gzip
