@@ -1,3 +1,4 @@
+# .github/workflows/ci.yml
 name: LabAuto CI
 
 on:
@@ -6,30 +7,56 @@ on:
   pull_request:
 
 jobs:
-  test:
+  test-and-build:
     runs-on: ubuntu-latest
     steps:
-    # 1) Checkout source
-    - uses: actions/checkout@v4
+    # 1) Checkout source code
+    - name: Checkout source
+      uses: actions/checkout@v4
 
-    # 2) Micromamba env (maintained action)
-    - uses: mamba-org/setup-micromamba@v2   # ✅ no deinit bug
+    # 2) Setup Micromamba environment from file and cache it
+    - name: Setup Micromamba
+      uses: mamba-org/setup-micromamba@v1
       with:
-        micromamba-version: "2.0.5-0"      # ≥0.25 supports -p
+        micromamba-version: "latest"
         environment-file: env.yml
         environment-name: labauto
         init-shell: bash
         cache-environment: true
-        cache-downloads:  true
+        cache-downloads: true
+        post-cleanup: 'never' # <<< THE FIX: Disable the failing post-job step
 
-    # 3) Feature extraction & model training
-    - name: Generate features & train model
+    # 3) Lint and format check
+    - name: Lint and Format Check with Ruff
+      shell: bash -l {0}
+      run: |
+        ruff check .
+        ruff format --check .
+
+    # 4) Download the large data file
+    - name: Download ClinVar Data
+      shell: bash -l {0}
+      run: |
+        echo "Downloading ClinVar data..."
+        # Replace this URL with the actual location of your file.
+        wget -q -O clinvar_20250615.vcf.gz https://your-data-hosting.com/path/to/clinvar_20250615.vcf.gz
+
+    # 5) Generate features & train model
+    - name: Generate Features & Train Model
       shell: bash -l {0}
       run: |
         python scripts/feature_engineering.py clinvar_20250615.vcf.gz
         python scripts/train.py
 
-    # 4) Placeholder tests (add your own under tests/)
-    - name: Dummy test
+    # 6) Run actual tests
+    - name: Run Tests with Pytest
       shell: bash -l {0}
-      run: echo "CI ran successfully"
+      run: |
+        pytest
+
+    # 7) Upload the trained model as an artifact
+    - name: Upload Model Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: trained-model
+        path: model.pkl
