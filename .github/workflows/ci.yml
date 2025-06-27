@@ -24,7 +24,7 @@ jobs:
         init-shell: bash
         cache-environment: true
         cache-downloads: true
-        post-cleanup: 'never' # <<< THE FIX: Disable the failing post-job step
+        post-cleanup: 'never' # <- MUST be indented like this
 
     # 3) Lint and format check
     - name: Lint and Format Check with Ruff
