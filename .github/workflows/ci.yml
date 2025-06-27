@@ -1,4 +1,4 @@
-# .github/workflows/ci.yml
+[⚠️ Suspicious Content] # .github/workflows/ci.yml
 name: LabAuto CI
 
 on:
@@ -14,17 +14,9 @@ jobs:
     - name: Checkout source
       uses: actions/checkout@v4
 
-    # <<< THE FIX IS HERE >>>
-    # 2) Add a step to print the workflow file for debugging
-    - name: Debug - Show Workflow File Contents
-      run: |
-        echo "--- Displaying .github/workflows/ci.yml ---"
-        cat .github/workflows/ci.yml
-        echo "-------------------------------------------"
-
-    # 3) Setup Micromamba environment, pinning to a specific version
+    # 2) Setup Micromamba environment, pinning to a specific version
     - name: Setup Micromamba
-      uses: mamba-org/setup-micromamba@v1.8.0 # Pin to a specific, stable version
+      uses: mamba-org/setup-micromamba@v1 # We can go back to v1, it's fine.
       with:
         micromamba-version: "latest"
         environment-file: env.yml
@@ -32,32 +24,36 @@ jobs:
         init-shell: bash
         cache-environment: true
         cache-downloads: true
-        post-cleanup: 'never' # This is the critical line
+        post-cleanup: 'none' # <<< THE CORRECT FIX: 'none' instead of 'never'
 
-    # 4) Lint and format check
+    # 3) Lint and format check
     - name: Lint and Format Check with Ruff
       shell: bash -l {0}
       run: |
         ruff check .
         ruff format --check .
 
-    # ... (rest of your workflow remains the same)
+    # 4) Download the large data file
     - name: Download ClinVar Data
       shell: bash -l {0}
       run: |
         echo "Downloading ClinVar data..."
         wget -q -O clinvar_20250615.vcf.gz https://your-data-hosting.com/path/to/clinvar_20250615.vcf.gz
 
+    # 5) Generate features & train model
     - name: Generate Features & Train Model
       shell: bash -l {0}
       run: |
         python scripts/feature_engineering.py clinvar_20250615.vcf.gz
         python scripts/train.py
 
+    # 6) Run actual tests
     - name: Run Tests with Pytest
       shell: bash -l {0}
-      run: pytest
+      run: |
+        pytest
 
+    # 7) Upload the trained model as an artifact
     - name: Upload Model Artifact
       uses: actions/upload-artifact@v4
       with:
