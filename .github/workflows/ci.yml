@@ -14,9 +14,17 @@ jobs:
     - name: Checkout source
       uses: actions/checkout@v4
 
-    # 2) Setup Micromamba environment from file and cache it
+    # <<< THE FIX IS HERE >>>
+    # 2) Add a step to print the workflow file for debugging
+    - name: Debug - Show Workflow File Contents
+      run: |
+        echo "--- Displaying .github/workflows/ci.yml ---"
+        cat .github/workflows/ci.yml
+        echo "-------------------------------------------"
+
+    # 3) Setup Micromamba environment, pinning to a specific version
     - name: Setup Micromamba
-      uses: mamba-org/setup-micromamba@v1
+      uses: mamba-org/setup-micromamba@v1.8.0 # Pin to a specific, stable version
       with:
         micromamba-version: "latest"
         environment-file: env.yml
@@ -24,37 +32,32 @@ jobs:
         init-shell: bash
         cache-environment: true
         cache-downloads: true
-        post-cleanup: 'never' # <- MUST be indented like this
+        post-cleanup: 'never' # This is the critical line
 
-    # 3) Lint and format check
+    # 4) Lint and format check
     - name: Lint and Format Check with Ruff
       shell: bash -l {0}
       run: |
         ruff check .
         ruff format --check .
 
-    # 4) Download the large data file
+    # ... (rest of your workflow remains the same)
     - name: Download ClinVar Data
       shell: bash -l {0}
       run: |
         echo "Downloading ClinVar data..."
-        # Replace this URL with the actual location of your file.
         wget -q -O clinvar_20250615.vcf.gz https://your-data-hosting.com/path/to/clinvar_20250615.vcf.gz
 
-    # 5) Generate features & train model
     - name: Generate Features & Train Model
       shell: bash -l {0}
       run: |
         python scripts/feature_engineering.py clinvar_20250615.vcf.gz
         python scripts/train.py
 
-    # 6) Run actual tests
     - name: Run Tests with Pytest
       shell: bash -l {0}
-      run: |
-        pytest
+      run: pytest
 
-    # 7) Upload the trained model as an artifact
     - name: Upload Model Artifact
       uses: actions/upload-artifact@v4
       with:
