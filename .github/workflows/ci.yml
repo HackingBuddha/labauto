@@ -61,8 +61,7 @@ jobs:
       run: |
         echo "Downloading ClinVar data..."
         curl -L --retry 5 --retry-delay 10 \
-          -o clinvar_20250615.vcf.gz \
-          https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/weekly/clinvar_20250615.vcf.gz
+          -o clinvar_20250615.vcf.gz \https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/weekly/clinvar_20250615.vcf.gz
 
 
     # 6) Run actual tests
