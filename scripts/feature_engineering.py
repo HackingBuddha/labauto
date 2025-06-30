@@ -56,16 +56,19 @@ def main(vcf_path: str, out_path: str):
     df["CADD"] = info_dicts.apply(lambda d: float(d.get("CADD", "nan")))
     df["AF"] = info_dicts.apply(lambda d: float(d.get("AF", "nan")))
     df["DP"] = info_dicts.apply(lambda d: float(d.get("DP", "nan")))
-    
+
     # after parsing CADD/AF/DP …
     df["SpliceAI_DS"] = info_dicts.apply(
-        lambda d: max(float(x) for x in d.get("SpliceAI", "nan|nan|nan|nan").split("|") if x != "nan")
-                if "SpliceAI" in d else float("nan")
+        lambda d: max(
+            float(x)
+            for x in d.get("SpliceAI", "nan|nan|nan|nan").split("|")
+            if x != "nan"
+        )
+        if "SpliceAI" in d
+        else float("nan")
     )
 
-    df["gnomAD_AF"] = info_dicts.apply(
-        lambda d: float(d.get("gnomad_AF", "nan"))
-    )
+    df["gnomAD_AF"] = info_dicts.apply(lambda d: float(d.get("gnomad_AF", "nan")))
 
     df["CLNSIG"] = info_dicts.apply(lambda d: d.get("CLNSIG"))
 

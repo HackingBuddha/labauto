@@ -42,11 +42,14 @@ y = ...
 clf = LogisticRegression(max_iter=1000, class_weight="balanced")
 
 cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-auc = cross_val_score(clf, X, y, cv=cv,
-                      scoring="roc_auc", n_jobs=-1).mean()
+auc = cross_val_score(clf, X, y, cv=cv, scoring="roc_auc", n_jobs=-1).mean()
 print(f"CV AUROC = {auc:.3f}")
 
 clf.fit(X, y)
+
+y_prob = clf.predict_proba(X)[:, 1]
+auc = roc_auc_score(y, y_prob)
+print(f"AUC  {auc:.3f}")
 
 joblib.dump(clf, args.model)
 print("✅ saved", args.model)
