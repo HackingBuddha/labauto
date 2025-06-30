@@ -15,6 +15,7 @@ import sys
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
+from sklearn.model_selection import cross_val_score, StratifiedKFold
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--data", default="data/clinvar_features.parquet")
@@ -35,8 +36,17 @@ if y.nunique() < 2:
 
 X = df[[c for c in ["DP", "AF", "CADD"] if c in df.columns]].fillna(0)
 
-clf = LogisticRegression(max_iter=500, class_weight="balanced").fit(X, y)
-print("AUC", roc_auc_score(y, clf.predict_proba(X)[:, 1]))
+X = df[["DP", "AF", "CADD", "SpliceAI_DS", "gnomAD_AF"]].fillna(0)
+y = ...
+
+clf = LogisticRegression(max_iter=1000, class_weight="balanced")
+
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+auc = cross_val_score(clf, X, y, cv=cv,
+                      scoring="roc_auc", n_jobs=-1).mean()
+print(f"CV AUROC = {auc:.3f}")
+
+clf.fit(X, y)
 
 joblib.dump(clf, args.model)
 print("✅ saved", args.model)
