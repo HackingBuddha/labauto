@@ -56,11 +56,14 @@ jobs:
 
 
     # 5) Generate features & train model
-    - name: Generate Features & Train Model
+    - name: Download ClinVar data
       shell: bash -l {0}
       run: |
-        python scripts/feature_engineering.py clinvar_20250615.vcf.gz
-        python scripts/train.py
+        echo "Downloading ClinVar data..."
+        curl -L --retry 5 --retry-delay 10 \
+          -o clinvar_20250615.vcf.gz \
+          https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/weekly/clinvar_20250615.vcf.gz
+
 
     # 6) Run actual tests
     - name: Run Tests with Pytest
