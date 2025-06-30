@@ -34,11 +34,26 @@ jobs:
         ruff format --check .
 
     # 4) Download the large data file
-    - name: Download ClinVar Data
+    - name: Download ClinVar data
       shell: bash -l {0}
       run: |
         echo "Downloading ClinVar data..."
-        wget -q -O clinvar_20250615.vcf.gz https://your-data-hosting.com/path/to/clinvar_20250615.vcf.gz
+        curl -L --retry 5 --retry-delay 10 \
+          -o clinvar_20250615.vcf.gz \
+          https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/weekly/clinvar_20250615.vcf.gz
+    
+    - name: Cache ClinVar
+      uses: actions/cache@v4
+      with:
+        path: clinvar_20250615.vcf.gz
+        key: clinvar-${{ hashFiles('scripts/feature_engineering.py') }}-20250615
+
+    - name: Download ClinVar (if not cached)
+      if: steps.cache-clinvar.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: curl -L --retry 5 -o clinvar_20250615.vcf.gz \
+          https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/weekly/clinvar_20250615.vcf.gz
+
 
     # 5) Generate features & train model
     - name: Generate Features & Train Model
