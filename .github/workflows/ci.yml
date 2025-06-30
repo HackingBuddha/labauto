@@ -9,20 +9,20 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    # 1) Checkout source
+    # 1) Checkout
     - uses: actions/checkout@v4
 
-    # 2) Micromamba env (maintained action)
-    - uses: mamba-org/setup-micromamba@v2   # ✅ no deinit bug
+    # 2) Micromamba env
+    - uses: mamba-org/setup-micromamba@v2
       with:
-        micromamba-version: "2.0.5-0"      # ≥0.25 supports -p
+        micromamba-version: "2.0.5-0"
         environment-file: env.yml
         environment-name: labauto
         init-shell: bash
         cache-environment: true
-        cache-downloads:  true
+        cache-downloads: true
 
-    # 3) Cache or download ClinVar VCF (≈150 MB)
+    # 3) Cache or download ClinVar VCF
     - name: Cache ClinVar VCF
       id: cache-clinvar
       uses: actions/cache@v4
@@ -38,14 +38,14 @@ jobs:
         curl -L --retry 5 --retry-delay 10 -o clinvar_20250615.vcf.gz \
           https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/weekly/clinvar_20250615.vcf.gz
 
-    # 4) Feature extraction & model training
+    # 4) Feature extraction & training
     - name: Generate features & train model
       shell: bash -l {0}
       run: |
         python scripts/feature_engineering.py clinvar_20250615.vcf.gz --out data/clinvar_features.parquet
         python scripts/train.py --data data/clinvar_features.parquet --model data/variant_lr.pkl
 
-    # 5) Unit tests
+    # 5) Tests
     - name: Run pytest
       shell: bash -l {0}
       run: pytest -q
