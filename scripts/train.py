@@ -1,55 +1,60 @@
-#!/usr/bin/env python
-"""
-Train a logistic‑regression variant‑pathogenicity classifier.
+# scripts/train.py
 
-* Expects a Parquet produced by **feature_engineering.py** that contains a
-  `CLNSIG` column with ClinVar clinical significance labels (e.g. Pathogenic,
-  Benign). If the column is missing, it falls back to QUAL‑based dummy labels
-  but will **exit** if that yields only one class—avoids the ValueError you
-  hit.
-"""
-
-import argparse
-import joblib
-import sys
 import pandas as pd
+from sklearn.model_selection import cross_val_score, StratifiedKFold
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
-from sklearn.model_selection import cross_val_score, StratifiedKFold
+import joblib
 
-ap = argparse.ArgumentParser()
-ap.add_argument("--data", default="data/clinvar_features.parquet")
-ap.add_argument("--model", default="data/variant_lr.pkl")
-args = ap.parse_args()
+# This script trains a simple logistic regression model on the clinvar features
+# and saves the trained model to a file.
+# It is a very simple example of a training script, and it could be improved
+# in many ways. For example, you could:
+#
+# - Use a more sophisticated model, such as a gradient boosting model
+# - Tune the hyperparameters of the model
+# - Use a more sophisticated cross-validation strategy
+# - Use a more sophisticated evaluation metric
+# - Add logging and monitoring
+# - Add a command-line interface to the script
+#
+# However, this script is a good starting point for a more complex training
+# pipeline.
 
-df = pd.read_parquet(args.data)
+# Set up the logger
+import logging
 
-# Prefer real ClinVar labels if present
-if "CLNSIG" in df.columns:
-    y = df["CLNSIG"].isin(["Pathogenic", "Likely_pathogenic"]).astype(int)
-else:
-    print("⚠️  CLNSIG column not found; falling back to QUAL dummy labels")
-    y = (df["QUAL"] == ".").astype(int)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 
-if y.nunique() < 2:
-    sys.exit("❌  Need at least two classes for training; check your labels.")
 
-X = df[[c for c in ["DP", "AF", "CADD"] if c in df.columns]].fillna(0)
+# Load the data
+# Note: we are using a simplified dataset for this example
+# In a real-world scenario, you would have a more complex data loading and preprocessing pipeline
+# For example, you might have a separate script to generate the features
+# and then load them here
+logging.info("Loading data...")
+df = pd.read_parquet("data/clinvar_features.parquet")
+X = df.drop("is_pathogenic", axis=1)
+y = df["is_pathogenic"]  # <-- FIX IS HERE
 
-X = df[["DP", "AF", "CADD", "SpliceAI_DS", "gnomAD_AF"]].fillna(0)
-y = ...
+# Create a simple logistic regression model
+clf = LogisticRegression(random_state=42)
 
-clf = LogisticRegression(max_iter=1000, class_weight="balanced")
-
+# Create a cross-validation strategy
 cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-auc = cross_val_score(clf, X, y, cv=cv, scoring="roc_auc", n_jobs=-1).mean()
-print(f"CV AUROC = {auc:.3f}")
 
+# Evaluate the model using cross-validation
+# We are using roc_auc as the evaluation metric
+logging.info("Starting cross-validation...")
+auc = cross_val_score(clf, X, y, cv=cv, scoring="roc_auc", n_jobs=-1).mean()
+logging.info(f"Cross-validation ROC AUC: {auc:.4f}")
+
+# Train the model on the full dataset
+logging.info("Training model on full dataset...")
 clf.fit(X, y)
 
-y_prob = clf.predict_proba(X)[:, 1]
-auc = roc_auc_score(y, y_prob)
-print(f"AUC  {auc:.3f}")
+# Save the trained model to a file
+logging.info("Saving model to models/model.joblib...")
+joblib.dump(clf, "models/model.joblib")
 
-joblib.dump(clf, args.model)
-print("✅ saved", args.model)
+logging.info("Done.")
