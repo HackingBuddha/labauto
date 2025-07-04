@@ -14,9 +14,9 @@ jobs:
     - name: Checkout source
       uses: actions/checkout@v4
 
-    # 2) Setup Micromamba environment, pinning to a specific version
+    # 2) Setup Micromamba environment
     - name: Setup Micromamba
-      uses: mamba-org/setup-micromamba@v1 # We can go back to v1, it's fine.
+      uses: mamba-org/setup-micromamba@v1
       with:
         micromamba-version: "latest"
         environment-file: env.yml
@@ -24,7 +24,7 @@ jobs:
         init-shell: bash
         cache-environment: true
         cache-downloads: true
-        post-cleanup: 'none' # <<< THE CORRECT FIX: 'none' instead of 'never'
+        post-cleanup: 'none'
 
     # 3) Lint and format check
     - name: Lint and Format Check with Ruff
@@ -38,13 +38,15 @@ jobs:
       shell: bash -l {0}
       run: |
         echo "Downloading ClinVar data..."
-        wget -q -O clinvar_20250615.vcf.gz https://your-data-hosting.com/path/to/clinvar_20250615.vcf.gz
+        # --- FIX #1: Use the correct, real URL for the data file ---
+        wget -q -O clinvar_20250615.vcf.gz "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar_20250615.vcf.gz"
 
     # 5) Generate features & train model
     - name: Generate Features & Train Model
       shell: bash -l {0}
       run: |
-        python scripts/feature_engineering.py clinvar_20250615.vcf.gz
+        # --- FIX #2: Add the required --out argument for the feature engineering script ---
+        python scripts/feature_engineering.py clinvar_20250615.vcf.gz --out data/clinvar_features.parquet
         python scripts/train.py
 
     # 6) Run actual tests
@@ -58,4 +60,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: trained-model
-        path: model.pkl
+        # --- FIX #3: Use the correct path where train.py saves the model ---
+        path: models/model.joblib
