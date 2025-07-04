@@ -1,0 +1,4 @@
+# In .github/workflows/main.yml
+on:
+  push:
+    branches: [ master ] # <-- Listening to 'master'
