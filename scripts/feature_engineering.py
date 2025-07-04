@@ -4,6 +4,7 @@ import pandas as pd
 import vcf
 import argparse
 import logging
+import gzip  # <-- ADDED THIS IMPORT
 
 # Set up the logger
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
@@ -16,7 +17,8 @@ def vcf_to_dataframe(vcf_file):
     It is not a general-purpose VCF parser.
     For a more robust solution, you should use a library like cyvcf2 or pyvcf.
     """
-    vcf_reader = vcf.Reader(open(vcf_file, "r"))
+    # Use gzip.open to read the compressed .gz file in text mode ("rt")
+    vcf_reader = vcf.Reader(gzip.open(vcf_file, "rt")) # <-- CORRECTED THIS LINE
     records = []
     for record in vcf_reader:
         records.append(
@@ -87,7 +89,7 @@ def main():
         "is_indel",
         "is_deletion",
         "is_insertion",
-        "is_pathogenic",  # <-- THE FIX IS HERE
+        "is_pathogenic",
     ]
     df = df[feature_cols]
 
