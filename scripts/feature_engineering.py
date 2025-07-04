@@ -4,7 +4,8 @@ import pandas as pd
 import vcf
 import argparse
 import logging
-import gzip  # <-- ADDED THIS IMPORT
+import gzip
+import io  # <-- ADDED THIS IMPORT
 
 # Set up the logger
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
@@ -17,8 +18,12 @@ def vcf_to_dataframe(vcf_file):
     It is not a general-purpose VCF parser.
     For a more robust solution, you should use a library like cyvcf2 or pyvcf.
     """
-    # Use gzip.open to read the compressed .gz file in text mode ("rt")
-    vcf_reader = vcf.Reader(gzip.open(vcf_file, "rt")) # <-- CORRECTED THIS LINE
+    # Use a robust two-step process:
+    # 1. Open the gzipped file in binary mode ('rb').
+    # 2. Wrap the binary stream with a text decoder (io.TextIOWrapper).
+    # This avoids conflicts between the gzip and PyVCF libraries.
+    vcf_reader = vcf.Reader(io.TextIOWrapper(gzip.open(vcf_file, "rb"), "utf-8")) # <-- CORRECTED THIS LINE
+
     records = []
     for record in vcf_reader:
         records.append(
